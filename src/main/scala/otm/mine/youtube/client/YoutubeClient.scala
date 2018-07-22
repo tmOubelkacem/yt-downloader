@@ -23,7 +23,7 @@ object YoutubeClient {
 
     val futureResponse: Future[Option[List[Item]]] = wsClient.url("https://www.googleapis.com/youtube/v3/playlistItems")
       .withQueryStringParameters(
-        ("key" -> "key"),
+        ("key" -> "may-private-key"),
         ("part"-> "snippet,contentDetails"),
         ("maxResults"-> "50"),
         ("playlistId"-> playListId)
