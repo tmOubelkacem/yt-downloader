@@ -20,10 +20,9 @@ object YoutubeClient {
   private val wsClient = StandaloneAhcWSClient()
 
   def getPlaylistItems(playListId: String):Option[List[Video]] = {
-
     val futureResponse: Future[Option[List[Item]]] = wsClient.url("https://www.googleapis.com/youtube/v3/playlistItems")
       .withQueryStringParameters(
-        ("key" -> "may-private-key"),
+        ("key" -> "AIzaSyCU2liS90EVXWxXh3a3pwA7oovKAcvgPXE"),
         ("part"-> "snippet,contentDetails"),
         ("maxResults"-> "50"),
         ("playlistId"-> playListId)

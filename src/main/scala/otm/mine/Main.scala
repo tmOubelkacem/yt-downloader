@@ -1,6 +1,6 @@
 package otm.mine
 
-import otm.mine.converter.ConverterClient
+import otm.mine.downloader.YTVideoDownloader
 import otm.mine.youtube.client.YoutubeClient
 
 object Main {
@@ -11,7 +11,7 @@ object Main {
       case Some(videos) => videos.foreach(
         video => {
           println(s"-> Video ${video.id} -  ${video.title}")
-          ConverterClient.convertVideo(video)(DownloadProcessor.download)
+	        YTVideoDownloader.download(video)
           println("--------------------------------------------------------------")
         }
       )
