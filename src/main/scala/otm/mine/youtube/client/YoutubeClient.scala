@@ -2,7 +2,7 @@ package otm.mine.youtube.client
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import otm.mine.common.Video
+import otm.mine.common.{Settings, Video}
 import otm.mine.youtube.model.Model._
 import play.api.libs.json._
 import play.api.libs.ws.JsonBodyReadables._
@@ -12,17 +12,17 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-object YoutubeClient {
+class YoutubeClient(settings: Settings) {
 
   implicit val system = ActorSystem("tracker-downloader")
   implicit val materializer = ActorMaterializer.create(system)
 
   private val wsClient = StandaloneAhcWSClient()
 
-  def getPlaylistItems(playListId: String):Option[List[Video]] = {
-    val futureResponse: Future[Option[List[Item]]] = wsClient.url("https://www.googleapis.com/youtube/v3/playlistItems")
+  def getPlaylistItems(playListId: String): Option[List[Video]] = {
+    val futureResponse: Future[Option[List[Item]]] = wsClient.url(settings.youtubeApiUrl)
       .withQueryStringParameters(
-        ("key" -> "AIzaSyCU2liS90EVXWxXh3a3pwA7oovKAcvgPXE"),
+        ("key" -> settings.youtubeApiKey),
         ("part"-> "snippet,contentDetails"),
         ("maxResults"-> "50"),
         ("playlistId"-> playListId)
