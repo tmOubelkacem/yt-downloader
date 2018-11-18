@@ -6,6 +6,7 @@ import otm.mine.common.{Settings, Video}
 import otm.mine.youtube.model.Model._
 import play.api.libs.json._
 import play.api.libs.ws.JsonBodyReadables._
+import play.api.libs.ws.StandaloneWSRequest
 import play.api.libs.ws.ahc.StandaloneAhcWSClient
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -18,6 +19,63 @@ class YoutubeClient(settings: Settings) {
   implicit val materializer = ActorMaterializer.create(system)
 
   private val wsClient = StandaloneAhcWSClient()
+
+  def get(playListId: String, pageToken: Option[String]) ={
+    var hasNextPageToken = true
+    var optPageToken = pageToken
+    var finalResult :Option[List[Video]] = Some(List[Video]())
+
+    while(hasNextPageToken){
+      val (optPageToken2, optPartialResult) = process(playListId, optPageToken)
+      optPageToken = optPageToken2
+      finalResult = Option((finalResult ++ optPartialResult).flatten.toList).filter(_.nonEmpty)
+
+      hasNextPageToken = optPageToken.isDefined
+    }
+    finalResult
+  }
+
+  private def process(playListId: String, pageToken: Option[String]): (Option[String], Option[List[Video]]) = {
+    val firstFutureResponse = callYouTube(playListId, pageToken)
+    val futureResponse = handleResponse(firstFutureResponse)
+    val (maybeNextPageToken, maybeItems) = Await.result(futureResponse, 30 seconds)
+
+    (maybeNextPageToken, extractVideos(maybeItems))
+  }
+
+  private def callYouTube(playListId: String, pageToken: Option[String]): Future[StandaloneWSRequest#Self#Response] = {
+    wsClient.url(settings.youtubeApiUrl)
+      .withQueryStringParameters(
+        ("key" -> settings.youtubeApiKey),
+        ("part"-> "snippet,contentDetails"),
+        ("maxResults"-> "50"),
+        ("playlistId"-> playListId),
+        ("pageToken"-> pageToken.getOrElse(""))
+      )
+      .get()
+  }
+
+  private def handleResponse(futureResponse: Future[StandaloneWSRequest#Self#Response])={
+    futureResponse.map(response => {
+      val statusCode = response.status
+      statusCode match {
+        case code if (200 to 299 contains code) => {
+          val jsonBody = response.body[JsValue]
+          val jsOptNextPageToken = (jsonBody \ "nextPageToken").validateOpt[String]
+          val jsOptItems = (jsonBody \ "items").validateOpt[List[Item]]
+
+          (
+            jsOptNextPageToken.get,
+            jsOptItems.get
+          )
+        }
+        case _ => {
+          println(s"YouTube API request failed with status code ${statusCode} - ${response.body}")
+          (None, None)
+        }
+      }
+    })
+  }
 
   def getPlaylistItems(playListId: String): Option[List[Video]] = {
     val futureResponse: Future[Option[List[Item]]] = wsClient.url(settings.youtubeApiUrl)

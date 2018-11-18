@@ -54,6 +54,7 @@ object Model {
   case class PlaylistItemListResponse(
                                        kind: String,
                                        etag: String,
+                                       nextPageToken: Option[String],
                                        pageInfo: PageInfo,
                                        items: List[Item]
                                      )

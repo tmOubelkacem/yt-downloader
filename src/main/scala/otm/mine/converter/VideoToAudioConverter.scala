@@ -22,7 +22,9 @@ class VideoToAudioConverter(settings: Settings) {
 	}
 
 	def convert()={
+		println(s">> Start converting MP3 from ${settings.videoOutRepo}")
 		getMp4FilesToConvert().foreach( mp4File => {
+			println(s"processing file ${mp4File.getName} ...")
 			val mp3File = new File(s"${settings.audioOutRepo}/${mp4File.getName.replace("mp4", "mp3")}")
 
 			val audio = new AudioAttributes()
@@ -37,6 +39,7 @@ class VideoToAudioConverter(settings: Settings) {
 
 			val encoder = new Encoder()
 			encoder.encode(mp4File, mp3File, attrs)
+			println(s"File ${mp4File.getName} processed \n ------------------------------------------------------")
 		})
 	}
 }

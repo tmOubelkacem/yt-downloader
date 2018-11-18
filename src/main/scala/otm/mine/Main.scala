@@ -15,18 +15,21 @@ object Main {
     val ytVideoDownloader: YTVideoDownloader = new YTVideoDownloader(settings)
     val videoToAudioConverter: VideoToAudioConverter = new VideoToAudioConverter(settings)
 
-    val maybeVideos = youtubeClient.getPlaylistItems(settings.playListId)
+    val maybeVideos = youtubeClient.get(settings.playListId, None)
     maybeVideos match {
       case Some(videos) => videos.foreach(
-        video => {
-          println(s"-> Video ${video.id} -  ${video.title}")
-          ytVideoDownloader.download(video)
-          println("--------------------------------------------------------------")
-        }
-    )
-        videoToAudioConverter.convert()
-        println("All playlist items done")
+          video => {
+            println(s"-> Video ${video.id} -  ${video.title}")
+            ytVideoDownloader.download(video)
+            println("--------------------------------------------------------------")
+          }
+        )
+        println("\n All playlist items done \n")
+
       case None => println("No video found in the given playlist !")
     }
+
+    videoToAudioConverter.convert()
+
   }
 }
