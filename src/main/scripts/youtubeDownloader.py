@@ -13,5 +13,7 @@ if not os.path.exists(path):
 yt.download(path)
 print("... downloaded")
 
-# installer : pip install pytube
+# installer : 
+# --> pip install pytube
+# ou --> pip install git+https://github.com/nficano/pytube.git
 # run : python <filename>.py
